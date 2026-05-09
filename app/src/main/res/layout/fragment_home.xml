@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_horizontal">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"
+        app:title="City Pulse"
+        app:titleCentered="true"
+        app:titleTextColor="@android:color/white"
+        android:layout_marginBottom="20dp"/>
+
+
+
+    <!-- Image -->
+    <ImageView
+        android:id="@+id/monImageView"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:src="@drawable/citypulse"
+        android:contentDescription="Logo de l'application"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Description -->
+    <TextView
+        android:id="@+id/descriptionApp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="    Bienvenue dans notre application.
+                            Elle vous permet de découvrir des lieux sur la carte."
+        android:textSize="20sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Bouton vers la page Map -->
+    <Button
+        android:id="@+id/btnOuvrirMap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ouvrir la carte" />
+
+
+
+</LinearLayout>
