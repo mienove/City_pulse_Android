@@ -1,3 +1,4 @@
+// -- AppDatabase.kt --
 package com.example.myprojectcitypulse.data.local
 
 import android.content.Context

@@ -1,4 +1,8 @@
+// -- LieuxViewModel.kt  --
 
+package com.example.myprojectcitypulse.viewmodel
+
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -8,47 +12,92 @@ import kotlinx.coroutines.launch
 
 class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
 
-    //  garde une copie des lieux
+    // Garde une copie des lieux
     private var listeComplete: List<Lieux> = emptyList()
 
-    val lieux = MutableLiveData<List<Lieux>>()
-    val loading = MutableLiveData<Boolean>()
-    val error = MutableLiveData<String>()
+    private val _lieux = MutableLiveData<List<Lieux>>()
+    val lieux: LiveData<List<Lieux>> = _lieux
+
+    private val _loading = MutableLiveData<Boolean>()
+    val loading: LiveData<Boolean> = _loading
+
+    private val _error = MutableLiveData<String>()
+    val error: LiveData<String> = _error
+
+    // ========== MÉTHODES EXISTANTES ==========
 
     fun chargerLieux() {
         viewModelScope.launch {
-            loading.value = true
+            _loading.value = true
             try {
                 val data = repository.getLieux()
-                listeComplete = data // stocke les donnees
-                lieux.value = data
+                listeComplete = data
+                _lieux.value = data
             } catch (e: Exception) {
-                error.value = "Erreur de chargement"
+                _error.value = "Erreur de chargement: ${e.message}"
             } finally {
-                loading.value = false
+                _loading.value = false
             }
         }
     }
 
-    // filtre  à partir de la liste complète
     fun filtreParCategorie(categorie: String) {
         if (categorie == "Tous") {
-            lieux.value = listeComplete
+            _lieux.value = listeComplete
         } else {
-            lieux.value = listeComplete.filter {
+            _lieux.value = listeComplete.filter {
                 it.categorie.equals(categorie, ignoreCase = true)
             }
         }
     }
 
-    //  recherche  à partir de la liste complète
     fun rechercher(text: String) {
         if (text.isEmpty()) {
-            lieux.value = listeComplete
+            _lieux.value = listeComplete
         } else {
-            lieux.value = listeComplete.filter {
+            _lieux.value = listeComplete.filter {
                 it.nomlieu.contains(text, ignoreCase = true)
             }
+        }
+    }
+
+    // ========== MÉTHODES POUR LA CARTE ==========
+
+    /**
+     * Charge les lieux à proximité d'une position GPS
+     */
+    fun chargerLieuxProches(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            _loading.value = true
+            try {
+                val lieuxProches = repository.getLieuxProches(latitude, longitude)
+                _lieux.value = lieuxProches
+                listeComplete = lieuxProches
+            } catch (e: Exception) {
+                _error.value = "Erreur lors du chargement des lieux à proximité: ${e.message}"
+            } finally {
+                _loading.value = false
+            }
+        }
+    }
+
+    // ========== MÉTHODES POUR FAVORIS ET NOTES (à appeler depuis PageDetail) ==========
+
+    fun toggleFavori(lieuId: Long, estFavori: Boolean) {
+        viewModelScope.launch {
+            if (estFavori) {
+                repository.ajouterFavori(lieuId)
+            } else {
+                repository.supprimerFavori(lieuId)
+            }
+            // Rafraîchir la liste
+            chargerLieux()
+        }
+    }
+
+    fun sauvegarderNote(lieuId: Long, note: String) {
+        viewModelScope.launch {
+            repository.sauvegarderNote(lieuId, note)
         }
     }
 }

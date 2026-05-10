@@ -1,4 +1,4 @@
-import com.example.myprojectcitypulse.model.Lieux
+package com.example.myprojectcitypulse.model
 
 data class ResponseApi(
     val elements: List<Element>

@@ -4,35 +4,48 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
+import androidx.lifecycle.lifecycleScope
+import com.example.myprojectcitypulse.R
+import com.example.myprojectcitypulse.data.remote.RetrofitClient
+import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.example.myprojectcitypulse.R
+import kotlinx.coroutines.launch
 
-class PageMap : Fragment(), OnMapReadyCallback {
+class PageMapTest : Fragment(), OnMapReadyCallback {
 
-    private lateinit var map: GoogleMap
+    private lateinit var mMap: GoogleMap
+    private lateinit var btnSwitchToList: Button
+    private lateinit var btnCenterLocation: Button
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
+
+    companion object {
+        private const val TAG = "CITY_PULSE"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialiser le launcher de permission
         requestPermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
-            if (isGranted) getUserLocation()
+            if (isGranted) {
+                enableMyLocation()
+            } else {
+                Toast.makeText(requireContext(), "Permission de localisation refusée", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -41,60 +54,144 @@ class PageMap : Fragment(), OnMapReadyCallback {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d(TAG, "onCreateView appelé")
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.d(TAG, "onViewCreated appelé")
 
-        val mapFragment = childFragmentManager
-            .findFragmentById(R.id.idmap) as SupportMapFragment
+        // Initialisation des boutons
+        btnSwitchToList = view.findViewById(R.id.btnSwitchToList)
+        btnCenterLocation = view.findViewById(R.id.btnCenterLocation)
 
-        mapFragment.getMapAsync(this)
-//button pour
-        val btnSwitch = view.findViewById<Button>(R.id.btnSwitchToList)
+        btnSwitchToList.setOnClickListener {
+            Toast.makeText(requireContext(), "Page Liste (bientôt disponible)", Toast.LENGTH_SHORT).show()
+        }
 
-        btnSwitch.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PageLieux())
-                .addToBackStack(null) // revenir à la carte avec le bouton retour
-                .commit()
+        btnCenterLocation.setOnClickListener {
+            centerOnUserLocation()
+        }
+
+        // Initialisation de la carte
+        try {
+            val mapFragment = childFragmentManager.findFragmentById(R.id.mapFragment) as SupportMapFragment
+            mapFragment.getMapAsync(this)
+            Log.d(TAG, "getMapAsync appelé")
+        } catch (e: Exception) {
+            Log.e(TAG, "Erreur: ${e.message}", e)
+            Toast.makeText(requireContext(), "Erreur: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-        requestLocationPermission()
+        mMap = googleMap
+        Log.d(TAG, "onMapReady appelé !!!")
+        Toast.makeText(requireContext(), "Carte chargée !", Toast.LENGTH_SHORT).show()
+
+        // Ajouter un marqueur de test
+        val testLocation = LatLng(18.5392, -72.3364)
+        mMap.addMarker(MarkerOptions().position(testLocation).title("Test CityPulse - Port-au-Prince"))
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(testLocation, 12f))
+
+        // Charger les lieux à proximité
+        loadNearbyPlaces(18.5392, -72.3364)
+
+        // Demander la permission de localisation
+        checkLocationPermission()
     }
 
-    private fun requestLocationPermission() {
+    private fun checkLocationPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                enableMyLocation()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                Toast.makeText(
+                    requireContext(),
+                    "Activez la localisation pour voir les lieux autour de vous",
+                    Toast.LENGTH_LONG
+                ).show()
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+            else -> {
+                requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun enableMyLocation() {
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            getUserLocation()
-        } else {
-            requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            mMap.isMyLocationEnabled = true
+            Toast.makeText(requireContext(), "Localisation activée", Toast.LENGTH_SHORT).show()
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun getUserLocation() {
+    private fun centerOnUserLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            Toast.makeText(requireContext(), "Fonctionnalité à venir", Toast.LENGTH_SHORT).show()
+        } else {
+            checkLocationPermission()
+        }
+    }
 
-        val fusedLocationClient =
-            LocationServices.getFusedLocationProviderClient(requireContext())
+    private fun loadNearbyPlaces(lat: Double, lng: Double) {
+        lifecycleScope.launch {
+            try {
+                Log.d(TAG, "Chargement des lieux à proximité...")
 
-        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-            location?.let {
-                val userLatLng = LatLng(it.latitude, it.longitude)
+                val query = """
+                    [out:json][timeout:25];
+                    (
+                        nwr(around:1000,$lat,$lng)["amenity"];
+                        nwr(around:1000,$lat,$lng)["shop"];
+                        nwr(around:1000,$lat,$lng)["tourism"];
+                    );
+                    out body;
+                """.trimIndent()
 
-                map.addMarker(
-                    MarkerOptions().position(userLatLng).title("Vous êtes ici")
-                )
+                val response = RetrofitClient.apiService.getLieux(query)
 
-                map.moveCamera(
-                    CameraUpdateFactory.newLatLngZoom(userLatLng, 15f)
-                )
+                if (response.isSuccessful && response.body() != null) {
+                    val elements = response.body()!!.elements
+                    Log.d(TAG, "Nombre de lieux trouvés: ${elements.size}")
+
+                    elements.forEach { element ->
+                        val position = LatLng(element.lat, element.lon)
+                        val nom = element.tags?.get("name") ?: "Sans nom"
+                        val categorie = element.tags?.get("amenity")
+                            ?: element.tags?.get("shop")
+                            ?: element.tags?.get("tourism")
+                            ?: "Lieu"
+
+                        mMap.addMarker(
+                            MarkerOptions()
+                                .position(position)
+                                .title(nom)
+                                .snippet(categorie)
+                        )
+                    }
+
+                    Toast.makeText(requireContext(), "${elements.size} lieux chargés", Toast.LENGTH_SHORT).show()
+                } else {
+                    Log.e(TAG, "Réponse API non valide")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Erreur chargement lieux: ${e.message}")
+                Toast.makeText(requireContext(), "Erreur: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

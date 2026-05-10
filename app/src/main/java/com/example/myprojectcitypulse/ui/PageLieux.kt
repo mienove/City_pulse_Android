@@ -1,7 +1,7 @@
 package com.example.myprojectcitypulse.ui
 
 
-import LieuxViewModel
+import com.example.myprojectcitypulse.viewmodel.LieuxViewModel
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -34,7 +34,7 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
         recyclerView.adapter = adapter
 
         //Architecture
-        val apiService = RetrofitClient.api
+        val apiService = RetrofitClient.apiService
         val database = AppDatabase.getDatabase(requireContext())
         val repository = LieuxRepository(apiService, database.lieuxDAO())
 

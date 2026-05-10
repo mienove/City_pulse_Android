@@ -1,3 +1,5 @@
+//--build.gradle--
+
 plugins {
     alias(libs.plugins.android.application)
     id("com.google.devtools.ksp")
