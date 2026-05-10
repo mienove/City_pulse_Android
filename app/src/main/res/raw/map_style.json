@@ -1,0 +1,16 @@
+[
+  {
+    "featureType": "all",
+    "elementType": "all",
+    "stylers": [
+      { "visibility": "on" }
+    ]
+  },
+  {
+    "featureType": "all",
+    "elementType": "labels",
+    "stylers": [
+      { "visibility": "on" }
+    ]
+  }
+]
