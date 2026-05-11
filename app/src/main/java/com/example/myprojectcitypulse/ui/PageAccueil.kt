@@ -21,8 +21,8 @@ class PageAccueil : Fragment(R.layout.fragment_home) {
             try {
                 Log.d("CITY_PULSE", "Tentative d'ouverture de PageMap")
 
-                // Correction: Supprimer le ".replace(...)" mal placé
-                val pageMap = PageMapTest()
+
+                val pageMap = PageMap()
 
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, pageMap)

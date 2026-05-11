@@ -5,34 +5,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.myprojectcitypulse.ui.PageMapTest">
+    tools:context=".ui.PageMap">
 
-    <!-- SupportMapFragment au lieu de MapView -->
-    <!-- Removed tools:layout="@layout/fragment_map" to fix rendering cycle -->
-    <androidx.fragment.app.FragmentContainerView
+    <!--
+        Using <fragment> instead of <FragmentContainerView> for SupportMapFragment
+        allows the Android Studio Layout Editor to show a map placeholder in the preview.
+    -->
+    <fragment
         android:id="@+id/mapFragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
-    <!-- Bouton Switch vers Liste -->
-    <Button
-        android:id="@+id/btnSwitchToList"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Liste"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Bouton Recentrer -->
-    <Button
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnCenterLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="↺"
-        android:textSize="24dp"
+        android:src="@android:drawable/ic_menu_mylocation"
+        android:contentDescription="Recentrer la carte"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
