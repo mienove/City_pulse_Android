@@ -98,8 +98,21 @@ class PageMap : Fragment(), OnMapReadyCallback {
         super.onViewCreated(view, savedInstanceState)
 
         btnCenterLocation = view.findViewById(R.id.btnCenterLocation)
+
         progressBar = view.findViewById(R.id.progressBar)
         permissionDeniedCard = view.findViewById(R.id.permissionDeniedCard)
+
+
+        btnSwitchToList.setOnClickListener{
+        val listelieux = PageLieux() // Remplacez par le nom exact de votre classe de liste
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, listelieux)
+            .addToBackStack(null) // revenir à la carte avec le bouton "Retour"
+            .commit()
+            Toast.makeText(requireContext(), "Page Liste (bientôt disponible)", Toast.LENGTH_SHORT).show()
+        }
+
+
 
         btnCenterLocation.setOnClickListener {
             centerOnUserLocation()
