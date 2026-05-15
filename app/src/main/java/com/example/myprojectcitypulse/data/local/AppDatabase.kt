@@ -1,12 +1,10 @@
-// -- AppDatabase.kt --
 package com.example.myprojectcitypulse.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.myprojectcitypulse.data.local.LieuxDAO
-
+import androidx.room.RoomDatabase.JournalMode
 
 @Database(entities = [com.example.myprojectcitypulse.model.Lieux::class], version = 2, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -23,7 +21,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "citypulse_database"
-                ).fallbackToDestructiveMigration(dropAllTables = true) .build()
+                )
+                    .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING) // Fixes database concurrency locks
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

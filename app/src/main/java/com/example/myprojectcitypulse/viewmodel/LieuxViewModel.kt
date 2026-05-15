@@ -1,5 +1,3 @@
-// -- LieuxViewModel.kt  --
-
 package com.example.myprojectcitypulse.viewmodel
 
 import androidx.lifecycle.LiveData
@@ -12,7 +10,6 @@ import kotlinx.coroutines.launch
 
 class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
 
-    // Garde une copie des lieux
     private var listeComplete: List<Lieux> = emptyList()
 
     private val _lieux = MutableLiveData<List<Lieux>>()
@@ -24,19 +21,17 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    // ========== MÉTHODES EXISTANTES ==========
-
     fun chargerLieux() {
         viewModelScope.launch {
-            _loading.value = true
+            _loading.postValue(true) // Safe background dispatch
             try {
                 val data = repository.getLieux()
                 listeComplete = data
-                _lieux.value = data
+                _lieux.postValue(data)
             } catch (e: Exception) {
-                _error.value = "Erreur de chargement: ${e.message}"
+                _error.postValue("Erreur de chargement: ${e.message}")
             } finally {
-                _loading.value = false
+                _loading.postValue(false)
             }
         }
     }
@@ -46,7 +41,7 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
             _lieux.value = listeComplete
         } else {
             _lieux.value = listeComplete.filter {
-                it.categorie.equals(categorie, ignoreCase = true)
+                it.categorie.contains(categorie, ignoreCase = true)
             }
         }
     }
@@ -61,27 +56,20 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
         }
     }
 
-    // ========== MÉTHODES POUR LA CARTE ==========
-
-    /**
-     * Charge les lieux à proximité d'une position GPS
-     */
     fun chargerLieuxProches(latitude: Double, longitude: Double) {
         viewModelScope.launch {
-            _loading.value = true
+            _loading.postValue(true)
             try {
                 val lieuxProches = repository.getLieuxProches(latitude, longitude)
-                _lieux.value = lieuxProches
                 listeComplete = lieuxProches
+                _lieux.postValue(lieuxProches)
             } catch (e: Exception) {
-                _error.value = "Erreur lors du chargement des lieux à proximité: ${e.message}"
+                _error.postValue("Erreur lors du chargement des lieux à proximité: ${e.message}")
             } finally {
-                _loading.value = false
+                _loading.postValue(false)
             }
         }
     }
-
-    // ========== MÉTHODES POUR FAVORIS ET NOTES (à appeler depuis PageDetail) ==========
 
     fun toggleFavori(lieuId: Long, estFavori: Boolean) {
         viewModelScope.launch {
@@ -90,14 +78,24 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
             } else {
                 repository.supprimerFavori(lieuId)
             }
-            // Rafraîchir la liste
-            chargerLieux()
+
+            // OPTIMIZATION: Update memory list to prevent heavy database re-reading
+            listeComplete = listeComplete.map {
+                if (it.idlieu == lieuId) it.copy(estFavori = if (estFavori) 1 else 0) else it
+            }
+            _lieux.postValue(listeComplete)
         }
     }
 
     fun sauvegarderNote(lieuId: Long, note: String) {
         viewModelScope.launch {
             repository.sauvegarderNote(lieuId, note)
+
+            // OPTIMIZATION: Inline update memory list state
+            listeComplete = listeComplete.map {
+                if (it.idlieu == lieuId) it.copy(notePersonnelle = note) else it
+            }
+            _lieux.postValue(listeComplete)
         }
     }
 }

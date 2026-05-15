@@ -1,43 +1,63 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://android.com"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+
+    android:background="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Barre de recherche -->
+        <!-- Barre d'application (App Bar) avec flèche de retour intégrée -->
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar_lieux"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:title="Liste des lieux"
+            app:navigationIcon="?attr/homeAsUpIndicator" /> <!-- Crée la flèche de retour -->
+
+        <!-- Barre de recherche textuelle -->
         <androidx.appcompat.widget.SearchView
             android:id="@+id/search_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:queryHint="Rechercher un lieu"
+            android:layout_margin="8dp"
+            android:background="@android:color/holo_orange_light"
+            android:queryHint="Rechercher un restaurant, musée, parc..."
             android:iconifiedByDefault="false" />
 
-        <!-- Filtrage par catégorie -->
+        <!-- Filtrage thématique par catégorie -->
         <Spinner
             android:id="@+id/categorieSpinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="10dp" />
-
-        <!-- Affichage de la liste -->
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:padding="10dp"
+        />
+        <!-- Affichage de la liste de données avec Room -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:padding="4dp" />
 
     </LinearLayout>
 
-    <!-- CHARGEMENT (LOADER) -->
+    <!-- INDICATEUR DE CHARGEMENT  -->
     <ProgressBar
         android:id="@+id/loader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:indeterminateTint="?attr/colorPrimary"
         android:visibility="gone" />
 
 </RelativeLayout>

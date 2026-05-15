@@ -1,13 +1,19 @@
 package com.example.myprojectcitypulse.data.remote
 
-import com.example.myprojectcitypulse.model.OverpassResponse
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.Body
+import retrofit2.http.Headers
+import retrofit2.http.POST
 
 interface ApiService {
-    @GET("interpreter")
+
+    @Headers(
+        "Content-Type: text/plain"
+    )
+    @POST("api/interpreter")
     suspend fun getLieux(
-        @Query("data") query: String
-    ): Response<OverpassResponse>
+        @Body body: RequestBody
+    ): Response<ResponseBody>
 }
