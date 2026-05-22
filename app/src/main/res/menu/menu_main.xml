@@ -1,0 +1,17 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_theme"
+        android:title="Thème"
+        app:showAsAction="never">
+
+        <menu>
+            <item android:id="@+id/light" android:title="Clair"/>
+            <item android:id="@+id/dark" android:title="Sombre"/>
+            <item android:id="@+id/system" android:title="Système"/>
+        </menu>
+
+    </item>
+
+</menu>

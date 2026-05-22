@@ -22,13 +22,6 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 1. GESTION DE L'APP BAR ET FLÈCHE DE RETOUR
-        val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_lieux)
-        toolbar.title = "Liste des lieux"
-        toolbar.setNavigationIcon(R.drawable.baseline_arrow_back_24)
-        toolbar?.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack() // Revient en arrière sur la page Map
-        }
 
         // Initialisation du RecyclerView avec  clic
         adapter = PageLieuxAdapter(emptyList()) { lieu ->
