@@ -24,15 +24,40 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
 
         // 1. GESTION DE L'APP BAR ET FLÈCHE DE RETOUR
         val toolbar = view.findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar_lieux)
+        toolbar.title = "Liste des lieux"
+        toolbar.setNavigationIcon(R.drawable.baseline_arrow_back_24)
         toolbar?.setNavigationOnClickListener {
             parentFragmentManager.popBackStack() // Revient en arrière sur la page Map
         }
 
-        // Initialisation du RecyclerView
-        adapter = PageLieuxAdapter(emptyList())
+        // Initialisation du RecyclerView avec  clic
+        adapter = PageLieuxAdapter(emptyList()) { lieu ->
+            // Création du fragment de détail
+            val fragment = PageLieuDetail()
+            val bundle = Bundle()
+
+            // Passage des données au fragment
+            bundle.putString("nom", lieu.nomlieu)
+            bundle.putString("categorie", lieu.categorie)
+            bundle.putString("adresse", lieu.adresse)
+            bundle.putDouble("latitude", lieu.latitude)
+            bundle.putDouble("longitude", lieu.longitude)
+            bundle.putString("note", lieu.notePersonnelle)
+            fragment.arguments = bundle
+
+            // Navigation vers le fragment  détail
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+        }
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
+        recyclerView.isVerticalScrollBarEnabled = true
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
+
+
 
         // Architecture
         val apiService = RetrofitClient.apiService
@@ -89,9 +114,9 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
 
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrEmpty()) {
-                    // Lance une recherche Overpass globale en arrière-plan (Coordonnées par défaut de P-au-P)
+                    // Lance une recherche Overpass globale en arrière-plan
                     viewModel.rechercher(query)
-                    searchView.clearFocus() // Ferme le clavier virtuel après validation
+                    searchView.clearFocus() // Ferme le clavier
                 }
                 return true
             }

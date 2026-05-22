@@ -18,7 +18,7 @@ class LieuxRepository(
 ) {
     private val gson = Gson()
 
-    // Méthode existante - récupère les lieux (API + cache)
+    // récupère les lieux (API + cache)
     suspend fun getLieux(): List<Lieux> = withContext(Dispatchers.IO) {
         try {
             val query = "[out:json][timeout:25];(nwr(around:3000,18.5392,-72.3364)[\"amenity\"];nwr(around:3000,18.5392,-72.3364)[\"tourism\"];nwr(around:3000,18.5392,-72.3364)[\"shop\"];nwr(around:3000,18.5392,-72.3364)[\"leisure\"];);out center;"
@@ -51,7 +51,7 @@ class LieuxRepository(
     suspend fun getLieuxProches(
         latitude: Double,
         longitude: Double,
-        rayonMeters: Int = 1000
+        rayonMeters: Int = 100
     ): List<Lieux> = withContext(Dispatchers.IO) {
         try {
             val query = "[out:json][timeout:25];(nwr(around:$rayonMeters,$latitude,$longitude)[\"amenity\"];nwr(around:$rayonMeters,$latitude,$longitude)[\"tourism\"];nwr(around:$rayonMeters,$latitude,$longitude)[\"leisure\"];nwr(around:$rayonMeters,$latitude,$longitude)[\"shop\"];);out center;"
@@ -78,7 +78,7 @@ class LieuxRepository(
     }
 
     /**
-     * Récupère tous les lieux de manière synchrone (pour la carte)
+     * Récupère tous les lieux pour la carte)
      */
     suspend fun getAllLieuxSync(): List<Lieux> = withContext(Dispatchers.IO) {
         try {
