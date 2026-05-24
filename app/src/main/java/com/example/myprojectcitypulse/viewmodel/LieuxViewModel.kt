@@ -59,6 +59,8 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
                 it.nomlieu.contains(text, ignoreCase = true)
             }
         }
+
+
     }
 
     // ========== MÉTHODES POUR LA CARTE ==========
@@ -99,5 +101,12 @@ class LieuxViewModel(private val repository: LieuxRepository) : ViewModel() {
         viewModelScope.launch {
             repository.sauvegarderNote(lieuId, note)
         }
+    }
+    //2.5
+    // Lieu actuellement sélectionné pour l'écran détail
+    val selectedLieu = MutableLiveData<Lieux?>()
+
+    fun setSelectedLieu(lieu: Lieux) {
+        selectedLieu.value = lieu
     }
 }

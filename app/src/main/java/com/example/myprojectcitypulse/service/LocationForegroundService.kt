@@ -18,6 +18,8 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.example.myprojectcitypulse.R
 
+
+
 class LocationForegroundService : Service() {
 
     private lateinit var locationCallback: LocationCallback
@@ -68,6 +70,8 @@ class LocationForegroundService : Service() {
             override fun onLocationResult(locationResult: LocationResult) {
                 locationResult.lastLocation?.let { location ->
                     sendLocationToApp(location)
+                    //2.6
+                    checkNearbyPlaces(location)
                 }
             }
         }
@@ -93,5 +97,48 @@ class LocationForegroundService : Service() {
         super.onDestroy()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         fusedLocationClient.removeLocationUpdates(locationCallback)
+    }
+    //2.6
+    private fun checkNearbyPlaces(location: android.location.Location) {
+
+        // TEMPORAIRE (on test d'abord avec 1 lieu fictif)
+        val testLieu = com.example.myprojectcitypulse.model.Lieux(
+            idlieu = 1,
+            nomlieu = "Test Lieu",
+            adresse = "Quelque part",
+            photo = "",
+            categorie = "Test",
+            latitude = location.latitude + 0.001,
+            longitude = location.longitude + 0.001,
+            estFavori = 0,
+            notePersonnelle = ""
+        )
+
+        val results = FloatArray(1)
+
+        android.location.Location.distanceBetween(
+            location.latitude,
+            location.longitude,
+            testLieu.latitude,
+            testLieu.longitude,
+            results
+        )
+
+        val distance = results[0]
+
+        if (distance <= 500) {
+
+            val notificationManager =
+                getSystemService(NOTIFICATION_SERVICE) as android.app.NotificationManager
+
+            val notification =
+                androidx.core.app.NotificationCompat.Builder(this, CHANNEL_ID)
+                    .setContentTitle("Lieu proche")
+                    .setContentText("${testLieu.nomlieu} à ${distance.toInt()} m")
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .build()
+
+            notificationManager.notify(1, notification)
+        }
     }
 }
