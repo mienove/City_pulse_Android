@@ -6,14 +6,17 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myprojectcitypulse.R
 import com.example.myprojectcitypulse.data.local.AppDatabase
+import com.example.myprojectcitypulse.data.local.Favori
 import com.example.myprojectcitypulse.data.remote.RetrofitClient
 import com.example.myprojectcitypulse.repository.LieuxRepository
 import com.example.myprojectcitypulse.ui.adapter.PageLieuxAdapter
 import com.example.myprojectcitypulse.viewmodel.LieuxViewModelFactory
+import kotlinx.coroutines.launch
 
 class PageLieux : Fragment(R.layout.fragment_lieu) {
     private lateinit var adapter: PageLieuxAdapter
@@ -24,26 +27,26 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
 
 
         // Initialisation du RecyclerView avec  clic
-        adapter = PageLieuxAdapter(emptyList()) { lieu ->
-            // Création du fragment de détail
-            val fragment = PageLieuDetail()
-            val bundle = Bundle()
+        adapter = PageLieuxAdapter(
+            emptyList(),
+            onItemClick = { lieu ->
+                // ouverture détail
+            },
+            onFavoriClick = { lieu ->
 
-            // Passage des données au fragment
-            bundle.putString("nom", lieu.nomlieu)
-            bundle.putString("categorie", lieu.categorie)
-            bundle.putString("adresse", lieu.adresse)
-            bundle.putDouble("latitude", lieu.latitude)
-            bundle.putDouble("longitude", lieu.longitude)
-            bundle.putString("note", lieu.notePersonnelle)
-            fragment.arguments = bundle
+                val favori = Favori(
+                    nom = lieu.nomlieu,
+                    categorie = lieu.categorie,
+                    adresse = lieu.adresse,
+                )
 
-            // Navigation vers le fragment  détail
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
+                lifecycleScope.launch {
+                    val dao = AppDatabase.getDatabase(requireContext()).favorisDao()
+                    dao.insert(favori)
+                    Toast.makeText(requireContext(), "Ajouté ⭐", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
 
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
         recyclerView.isVerticalScrollBarEnabled = true

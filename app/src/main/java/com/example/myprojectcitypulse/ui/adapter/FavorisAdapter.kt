@@ -16,6 +16,9 @@ class FavorisAdapter : RecyclerView.Adapter<FavorisAdapter.ViewHolder>() {
         list = data
         notifyDataSetChanged()
     }
+    fun getItem(position: Int): Favori {
+        return list[position]
+    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nom: TextView = itemView.findViewById(android.R.id.text1)

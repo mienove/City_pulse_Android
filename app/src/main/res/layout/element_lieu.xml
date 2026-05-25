@@ -22,6 +22,13 @@
         android:textSize="14sp"
         android:textStyle="bold"/>
 
+    <ImageButton
+        android:id="@+id/btnFavori"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@android:drawable/btn_star_big_off"
+        android:background="@android:color/transparent"
+        android:contentDescription="Ajouter aux favoris"/>
 
 
 </LinearLayout>
