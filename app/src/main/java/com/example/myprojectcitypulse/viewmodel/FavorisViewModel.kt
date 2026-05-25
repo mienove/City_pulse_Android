@@ -1,57 +1,24 @@
 package com.example.myprojectcitypulse.viewmodel
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myprojectcitypulse.data.local.FavorisDAO
-import com.example.myprojectcitypulse.model.Favoris
+import com.example.myprojectcitypulse.data.local.Favori
+import com.example.myprojectcitypulse.repository.FavorisRepository
 import kotlinx.coroutines.launch
 
-class FavorisViewModel(
-    private val dao: FavorisDAO
-) : ViewModel() {
+class FavorisViewModel(private val repo: FavorisRepository) : ViewModel() {
 
-    // Liste des favoris depuis Room
-    val favoris = dao.getAllFavoris()
+    val favoris = repo.getFavoris()
 
-    // =========================
-    // AJOUTER UN FAVORI
-    // =========================
-    fun insert(favoris: Favoris) {
-
+    fun addFavori(favori: Favori) {
         viewModelScope.launch {
-
-            dao.insertFavoris(favoris)
+            repo.addFavori(favori)
         }
     }
 
-    // =========================
-    // SUPPRIMER UN FAVORI
-    // =========================
-    fun delete(favoris: Favoris) {
-
+    fun deleteFavori(favori: Favori) {
         viewModelScope.launch {
-
-            dao.deleteFavoris(favoris)
+            repo.deleteFavori(favori)
         }
-    }
-
-    // =========================
-    // MODIFIER UN FAVORI
-    // =========================
-    fun update(favoris: Favoris) {
-
-        viewModelScope.launch {
-
-            dao.updateFavoris(favoris)
-        }
-    }
-
-    // =========================
-    // RECHERCHER UN FAVORI PAR ID
-    // =========================
-    suspend fun getFavorisById(id: Int): Favoris? {
-
-        return dao.getFavorisById(id)
     }
 }

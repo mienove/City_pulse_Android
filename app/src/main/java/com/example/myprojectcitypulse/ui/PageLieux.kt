@@ -1,24 +1,22 @@
 package com.example.myprojectcitypulse.ui
 
-
 import com.example.myprojectcitypulse.viewmodel.LieuxViewModel
 import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-
 import com.example.myprojectcitypulse.R
 import com.example.myprojectcitypulse.data.local.AppDatabase
+import com.example.myprojectcitypulse.data.local.Favori
 import com.example.myprojectcitypulse.data.remote.RetrofitClient
 import com.example.myprojectcitypulse.repository.LieuxRepository
-
 import com.example.myprojectcitypulse.ui.adapter.PageLieuxAdapter
 import com.example.myprojectcitypulse.viewmodel.LieuxViewModelFactory
-import kotlin.collections.emptyList
-
+import kotlinx.coroutines.launch
 
 class PageLieux : Fragment(R.layout.fragment_lieu) {
     private lateinit var adapter: PageLieuxAdapter
@@ -27,20 +25,45 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialisation du RecyclerView
-        adapter = PageLieuxAdapter(emptyList())
+
+        // Initialisation du RecyclerView avec  clic
+        adapter = PageLieuxAdapter(
+            emptyList(),
+            onItemClick = { lieu ->
+                // ouverture détail
+            },
+            onFavoriClick = { lieu ->
+
+                val favori = Favori(
+                    nom = lieu.nomlieu,
+                    categorie = lieu.categorie,
+                    adresse = lieu.adresse,
+                )
+
+                lifecycleScope.launch {
+                    val dao = AppDatabase.getDatabase(requireContext()).favorisDao()
+                    dao.insert(favori)
+                    Toast.makeText(requireContext(), "Ajouté ⭐", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+
         val recyclerView = view.findViewById<RecyclerView>(R.id.recyclerview)
+        recyclerView.isVerticalScrollBarEnabled = true
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
 
-        //Architecture
+
+
+        // Architecture
         val apiService = RetrofitClient.apiService
         val database = AppDatabase.getDatabase(requireContext())
         val repository = LieuxRepository(apiService, database.lieuxDAO())
 
-        //UTILISER LA FACTORY
+        // UTILISER LA FACTORY AVEC requireActivity()
+        //partager les données des favoris/notes instantanément entre la liste et la carte
         val factory = LieuxViewModelFactory(repository)
-        viewModel = ViewModelProvider(this, factory).get(LieuxViewModel::class.java)
+        viewModel = ViewModelProvider(requireActivity(), factory)[LieuxViewModel::class.java]
 
         // OBSERVER LES DONNÉES
         viewModel.lieux.observe(viewLifecycleOwner) { data ->
@@ -75,17 +98,29 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        //  RECHERCHE (Textuelle)
+        // RECHERCHE (Textuelle hybride : Filtrage local + Requête API globale)
         val searchView = view.findViewById<androidx.appcompat.widget.SearchView>(R.id.search_view)
         searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+
             override fun onQueryTextChange(newText: String?): Boolean {
+                // Filtre la liste instantanément pendant la saisie à partir de la mémoire
                 viewModel.rechercher(newText ?: "")
                 return true
             }
-            override fun onQueryTextSubmit(query: String?): Boolean = false
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (!query.isNullOrEmpty()) {
+                    // Lance une recherche Overpass globale en arrière-plan
+                    viewModel.rechercher(query)
+                    searchView.clearFocus() // Ferme le clavier
+                }
+                return true
+            }
         })
 
-        //  CHARGEMENT INITIAL
-        viewModel.chargerLieux()
+        // CHARGEMENT INITIAL (Uniquement si la liste est vide pour éviter d'écraser une recherche active)
+        if (viewModel.lieux.value.isNullOrEmpty()) {
+            viewModel.chargerLieux()
+        }
     }
 }

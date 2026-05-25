@@ -1,18 +1,24 @@
-// -- AppDatabase.kt --
 package com.example.myprojectcitypulse.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.myprojectcitypulse.data.local.LieuxDAO
+import androidx.room.RoomDatabase.JournalMode
+import com.example.myprojectcitypulse.model.Lieux
 
-
-@Database(entities = [com.example.myprojectcitypulse.model.Lieux::class], version = 2, exportSchema = false)
+@Database(
+    entities = [
+        Lieux::class,
+        Favori::class
+    ],
+    version = 3,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun lieuxDAO(): LieuxDAO
-
+    abstract fun favorisDao(): FavorisDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
@@ -23,7 +29,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "citypulse_database"
-                ).fallbackToDestructiveMigration(dropAllTables = true) .build()
+                )
+                    .setJournalMode(JournalMode.WRITE_AHEAD_LOGGING)
+                    .fallbackToDestructiveMigration()
+                    .build()
+
                 INSTANCE = instance
                 instance
             }

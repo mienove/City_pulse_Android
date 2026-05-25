@@ -2,6 +2,7 @@
 
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("com.google.devtools.ksp")
 }
 
@@ -14,6 +15,7 @@ android {
     }
 
     defaultConfig {
+
         applicationId = "com.example.myprojectcitypulse"
         minSdk = 26
         targetSdk = 36
@@ -21,6 +23,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val mapsApiKey = project.findProperty("MAPS_API_KEY")?.toString() ?: ""
+
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+
+
     }
 
     buildTypes {
@@ -61,10 +69,10 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:18.1.0")
     // Localisation
     implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
-
-
     //viewModelScope
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+
 
 }

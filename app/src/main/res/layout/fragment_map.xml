@@ -7,10 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.PageMap">
 
-    <!--
-        Using <fragment> instead of <FragmentContainerView> for SupportMapFragment
-        allows the Android Studio Layout Editor to show a map placeholder in the preview.
-    -->
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -20,6 +16,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/btnSwitchToList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Voir la liste"
+        tools:ignore="MissingConstraints" />
+
 
     <!-- Bouton Recentrer -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
