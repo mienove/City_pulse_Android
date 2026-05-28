@@ -13,10 +13,13 @@ import com.example.myprojectcitypulse.R
 import com.example.myprojectcitypulse.data.local.AppDatabase
 import com.example.myprojectcitypulse.data.local.Favori
 import com.example.myprojectcitypulse.data.remote.RetrofitClient
+import com.example.myprojectcitypulse.model.Lieux
 import com.example.myprojectcitypulse.repository.LieuxRepository
 import com.example.myprojectcitypulse.ui.adapter.PageLieuxAdapter
 import com.example.myprojectcitypulse.viewmodel.LieuxViewModelFactory
 import kotlinx.coroutines.launch
+import com.example.myprojectcitypulse.ui.DetailFragment
+
 
 class PageLieux : Fragment(R.layout.fragment_lieu) {
     private lateinit var adapter: PageLieuxAdapter
@@ -29,8 +32,26 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
         // Initialisation du RecyclerView avec  clic
         adapter = PageLieuxAdapter(
             emptyList(),
+            //2.5
             onItemClick = { lieu ->
-                // ouverture détail
+
+                val fragment = DetailFragment()
+
+                val bundle = Bundle().apply {
+                    putLong("idlieu", lieu.idlieu)
+                    putString("nom", lieu.nomlieu)
+                    putString("adresse", lieu.adresse)
+                    putString("categorie", lieu.categorie)
+                    putDouble("latitude", lieu.latitude)
+                    putDouble("longitude", lieu.longitude)
+                }
+
+                fragment.arguments = bundle
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit()
             },
             onFavoriClick = { lieu ->
 
@@ -124,3 +145,5 @@ class PageLieux : Fragment(R.layout.fragment_lieu) {
         }
     }
 }
+
+

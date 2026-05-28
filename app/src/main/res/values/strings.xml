@@ -3,5 +3,12 @@
     <string name="google_maps_key" translatable="false">AIzaSyBo52nJoYM7VltYJoUK0zJUYNG6-bpkfaM</string>
     <string name="button_liste">Liste</string>
     <string name="button_recenter">↺</string>
+    <string name="coordonnees_format">Lat: %1$s / Lng: %2$s</string>
+    <string name="share_via">Partager via</string>
+
+    <string name="label_nom">Nom</string>
+    <string name="label_adresse">Adresse</string>
+    <string name="label_categorie">Catégorie</string>
+    <string name="label_coordonnees">Coordonnées</string>
 
 </resources>

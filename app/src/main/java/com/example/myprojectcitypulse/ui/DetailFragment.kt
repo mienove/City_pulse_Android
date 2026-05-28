@@ -1,97 +1,80 @@
-//2.5
 package com.example.myprojectcitypulse.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.example.myprojectcitypulse.R
-import com.example.myprojectcitypulse.model.Lieux
-import com.example.myprojectcitypulse.viewmodel.LieuxViewModel
 
-class DetailFragment : Fragment() {
+class DetailFragment : Fragment(R.layout.fragment_detail_partage) {
 
-    // ViewModel partagé avec l'activité
-    private lateinit var viewModel: LieuxViewModel
-
-    // Lieu sélectionné
-    private lateinit var lieu: Lieux
-
-    // UI
-    private lateinit var txtNom: TextView
-    private lateinit var txtAdresse: TextView
-    private lateinit var txtCategorie: TextView
-    private lateinit var txtCoordonnees: TextView
-    private lateinit var btnShare: Button
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return inflater.inflate(R.layout.fragment_detail_partage, container, false)
-    }
+    private var idlieu: Long = -1L
+    private var nom: String = ""
+    private var adresse: String = ""
+    private var categorie: String = ""
+    private var latitude: Double = 0.0
+    private var longitude: Double = 0.0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialisation ViewModel (IMPORTANT)
-        viewModel = ViewModelProvider(requireActivity())[LieuxViewModel::class.java]
+        val txtNom = view.findViewById<TextView>(R.id.txtNomLieu)
+        val txtAdresse = view.findViewById<TextView>(R.id.txtAdresse)
+        val txtCategorie = view.findViewById<TextView>(R.id.txtCategorie)
+        val txtCoordonnees = view.findViewById<TextView>(R.id.txtCoordonnees)
+        val btnShare = view.findViewById<Button>(R.id.btnShare)
 
-        // Liaison UI (doit correspondre EXACTEMENT au XML)
-        txtNom = view.findViewById(R.id.txtNomLieu)
-        txtAdresse = view.findViewById(R.id.txtAdresse)
-        txtCategorie = view.findViewById(R.id.txtCategorie)
-        txtCoordonnees = view.findViewById(R.id.txtCoordonnees)
-        btnShare = view.findViewById(R.id.btnShare)
-
-        // Observer le lieu sélectionné
-        viewModel.selectedLieu.observe(viewLifecycleOwner) { data ->
-            data?.let {
-                lieu = it
-                afficherLieu()
-            }
+        // Récupération des données du Bundle
+        arguments?.let {
+            idlieu = it.getLong("idlieu")
+            nom = it.getString("nom") ?: "Non renseigné"
+            adresse = it.getString("adresse") ?: "Non renseignée"
+            categorie = it.getString("categorie") ?: "Non définie"
+            latitude = it.getDouble("latitude")
+            longitude = it.getDouble("longitude")
         }
 
-        // Bouton partager
+        // Affichage
+        txtNom.text = nom
+        txtAdresse.text = adresse
+        txtCategorie.text = categorie
+
+        txtCoordonnees.text = getString(
+            R.string.coordonnees_format,
+            latitude.toString(),
+            longitude.toString()
+        )
+
+        // Partage Google Maps
         btnShare.setOnClickListener {
-            partagerLieu()
+
+            val lienMaps =
+                "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude"
+
+            val message = """
+                $nom
+
+                Adresse :
+                $adresse
+
+                Catégorie :
+                $categorie
+
+                Coordonnées :
+                $latitude, $longitude
+
+                Google Maps :
+                $lienMaps
+            """.trimIndent()
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, message)
+            }
+
+            startActivity(Intent.createChooser(intent, "Partager via"))
         }
-    }
-
-    // Affichage des infos
-    private fun afficherLieu() {
-        txtNom.text = lieu.nomlieu
-        txtAdresse.text = lieu.adresse
-        txtCategorie.text = lieu.categorie
-        txtCoordonnees.text = "${lieu.latitude}, ${lieu.longitude}"
-    }
-
-    // Fonction de partage (WhatsApp / SMS / Email)
-    private fun partagerLieu() {
-
-        val message = """
-            Nom : ${lieu.nomlieu}
-            Adresse : ${lieu.adresse}
-            Catégorie : ${lieu.categorie}
-
-            Coordonnées :
-            ${lieu.latitude}, ${lieu.longitude}
-
-            Google Maps :
-            https://maps.google.com/?q=${lieu.latitude},${lieu.longitude}
-        """.trimIndent()
-
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, message)
-        }
-
-        startActivity(Intent.createChooser(intent, "Partager via"))
     }
 }
